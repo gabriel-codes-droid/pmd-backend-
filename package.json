@@ -8,8 +8,8 @@
   "main": "index.js",
   "scripts": {
     "run": "node server",
-    "dev": "node --watch --env-file=.env server",
-    "start": "node server.js"
+    "dev": "node --watch --env-file=.env server"
+    
   },
   "dependencies": {
     "cors": "^2.8.6",
