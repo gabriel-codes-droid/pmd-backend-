@@ -14,12 +14,17 @@ const activitySchema = new mongoose.Schema({
     completed: {
         type: Boolean,
         default: false
-    }
+    },
+    userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+}
 });
 
 const Activity = mongoose.model(
     "Activity",
     activitySchema
+    
 );
 
 export default Activity;

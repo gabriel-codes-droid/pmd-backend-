@@ -1,14 +1,13 @@
 import mongoose from "mongoose";
 
 const mealSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: true
-    },
+    title: String,
 
-    calories: {
-        type: Number,
-        required: true
+    calories: Number,
+
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     }
 });
 
