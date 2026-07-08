@@ -1,30 +1,18 @@
 import mongoose from "mongoose";
 
 const activitySchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: true
-    },
-
-    priority: {
-        type: String,
-        default: "Medium"
-    },
-
-    completed: {
-        type: Boolean,
-        default: false
-    },
+    title: { type: String, required: true },
+    description: { type: String, default: "" },
+    startTime: { type: Date, required: true },
+    endTime: { type: Date, required: true },
+    done: { type: Boolean, default: false },
     userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-}
-});
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+}, { timestamps: true });
 
-const Activity = mongoose.model(
-    "Activity",
-    activitySchema
-    
-);
+const Activity = mongoose.model("Activity", activitySchema);
 
 export default Activity;
