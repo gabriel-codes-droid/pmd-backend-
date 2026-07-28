@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci || npm install
+      - run: node --check server.js
+      - run: node --check seed-admin.js
+      - name: Verify required env vars are documented
+        run: |
+          grep -q "JWT_SECRET" .env.example
+          grep -q "MONGO_URI" .env.example
+          grep -q "CORS_ORIGINS" .env.example
