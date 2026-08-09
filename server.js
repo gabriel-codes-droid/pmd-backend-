@@ -9,6 +9,7 @@ import mealRoutes from "./routes/mealRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 import financeRoutes from "./routes/financeRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 // --- env validation ---
 const required = ["JWT_SECRET", "MONGO_URI"];
@@ -94,6 +95,7 @@ app.use("/api/meals", mealRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/finances", financeRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 app.use((err, req, res, next) => {
     console.error(err);

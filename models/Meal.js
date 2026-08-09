@@ -13,6 +13,16 @@ const mealSchema = new mongoose.Schema({
         enum: ["manual", "api", "dish"],
         default: "manual",
     },
+    // Nutrition fields
+    protein: { type: Number, default: 0 },
+    carbs: { type: Number, default: 0 },
+    fat: { type: Number, default: 0 },
+    fiber: { type: Number, default: 0 },
+    sugars: { type: Number, default: 0 },
+    sodium: { type: Number, default: 0 },
+    // Product metadata
+    barcode: { type: String },
+    brand: { type: String },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
