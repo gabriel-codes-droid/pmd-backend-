@@ -1,0 +1,80 @@
+
+> personal-management-dashboard-backend@1.0.0 dev
+> node --watch --env-file=.env server
+
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Failed running 'server'. Waiting for file changes before restarting...
+Restarting 'server'
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Error: CORS: origin http://localhost:5178 not allowed
+    at origin (file:///C:/Users/HP/OneDrive/Desktop/Personal%20Management%20Dashboard%20backend/server.js:44:23)
+    at C:\Users\HP\OneDrive\Desktop\Personal Management Dashboard backend\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (C:\Users\HP\OneDrive\Desktop\Personal Management Dashboard backend\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (C:\Users\HP\OneDrive\Desktop\Personal Management Dashboard backend\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (C:\Users\HP\OneDrive\Desktop\Personal Management Dashboard backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\HP\OneDrive\Desktop\Personal Management Dashboard backend\node_modules\router\index.js:342:13)
+    at C:\Users\HP\OneDrive\Desktop\Personal Management Dashboard backend\node_modules\router\index.js:297:9
+    at processParams (C:\Users\HP\OneDrive\Desktop\Personal Management Dashboard backend\node_modules\router\index.js:582:12)
+    at next (C:\Users\HP\OneDrive\Desktop\Personal Management Dashboard backend\node_modules\router\index.js:291:5)
+    at internalNext (file:///C:/Users/HP/OneDrive/Desktop/Personal%20Management%20Dashboard%20backend/node_modules/helmet/index.mjs:554:6)
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Restarting 'server'
+PMD backend running on port 8000 (env=development)
+MongoDB Connected
+Failed running 'server'. Waiting for file changes before restarting...
