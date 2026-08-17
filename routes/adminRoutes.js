@@ -3,6 +3,7 @@ import User from "../models/users.js";
 import Transaction from "../models/Transaction.js";
 import Meal from "../models/Meal.js";
 import Activity from "../models/Activity.js";
+import SavingsGoal from "../models/SavingsGoal.js";
 import { authRequired, adminRequired } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -41,6 +42,7 @@ router.delete("/users/:id", async (req, res) => {
         Transaction.deleteMany({ userId: user._id }),
         Meal.deleteMany({ userId: user._id }),
         Activity.deleteMany({ userId: user._id }),
+        SavingsGoal.deleteMany({ userId: user._id }),
         User.findByIdAndDelete(user._id),
     ]);
     res.json({ message: "User and their data deleted" });
@@ -65,17 +67,20 @@ router.put("/users/:id/ban", async (req, res) => {
     res.json(user);
 });
 
-// Get user activity (placeholder - would need activity logging system)
+// Get user activity — uses real fields from the User document (lastLogin,
+// createdAt). Full action-by-action audit logging would need a dedicated
+// log collection, which doesn't exist yet; this reports what's actually known.
 router.get("/users/:id/activity", async (req, res) => {
     const user = await User.findById(req.params.id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
-    
-    // Mock activity data - in production, this would come from an activity log
+
     const activities = [
         { action: "Account Created", timestamp: user.createdAt, details: "User registration" },
-        { action: "Last Login", timestamp: new Date(), details: "Recent login" },
     ];
-    
+    if (user.lastLogin) {
+        activities.push({ action: "Last Login", timestamp: user.lastLogin, details: "Most recent sign-in" });
+    }
+
     res.json({ user, activities });
 });
 

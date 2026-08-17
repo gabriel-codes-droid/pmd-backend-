@@ -18,6 +18,7 @@ const transactionSchema = new mongoose.Schema({
         ref: "User",
         required: true,
     },
+    deletedAt: { type: Date, default: null },
 }, { timestamps: true });
 
 const Transaction = mongoose.model("Transaction", transactionSchema);

@@ -14,6 +14,7 @@ const sanitize = (u) => ({
     username: u.username,
     email: u.email,
     role: u.role,
+    lastLogin: u.lastLogin,
     createdAt: u.createdAt,
 });
 
@@ -77,7 +78,7 @@ router.get("/check-email", async (req, res) => {
         const email = String(req.query.email || "").toLowerCase().trim();
         if (!email) return res.status(400).json({ message: "email is required" });
         const exists = await User.findOne({ email }).select("_id").lean();
-        res.json({ exists: !!exists });
+        res.json({ available: !exists });
     } catch (err) {
         res.status(500).json({ message: err.message || "Server error" });
     }
@@ -88,7 +89,7 @@ router.get("/check-username", async (req, res) => {
         const username = String(req.query.username || "").trim();
         if (!username) return res.status(400).json({ message: "username is required" });
         const exists = await User.findOne({ username }).select("_id").lean();
-        res.json({ exists: !!exists });
+        res.json({ available: !exists });
     } catch (err) {
         res.status(500).json({ message: err.message || "Server error" });
     }
@@ -105,6 +106,13 @@ router.post("/login", async (req, res) => {
 
         const ok = await bcrypt.compare(password, user.password);
         if (!ok) return res.status(401).json({ message: "Invalid credentials" });
+
+        if (user.banned) {
+            return res.status(403).json({ message: "Account banned. Contact support." });
+        }
+
+        user.lastLogin = new Date();
+        await user.save();
 
         const token = signToken(user);
         res.json({ token, user: sanitize(user) });

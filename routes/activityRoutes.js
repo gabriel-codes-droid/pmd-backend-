@@ -7,7 +7,7 @@ const router = express.Router();
 router.use(authRequired);
 
 router.get("/", async (req, res) => {
-    const activities = await Activity.find({ userId: req.user._id }).sort({ startTime: 1 });
+    const activities = await Activity.find({ userId: req.user._id, deletedAt: null }).sort({ startTime: 1 });
     res.json(activities);
 });
 
@@ -43,9 +43,13 @@ router.put("/:id", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-    const deleted = await Activity.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+    const deleted = await Activity.findOneAndUpdate(
+        { _id: req.params.id, userId: req.user._id, deletedAt: null },
+        { deletedAt: new Date() },
+        { new: true }
+    );
     if (!deleted) return res.status(404).json({ message: "Activity not found" });
-    res.json({ message: "Activity deleted" });
+    res.json({ message: "Activity moved to trash" });
 });
 
 export default router;

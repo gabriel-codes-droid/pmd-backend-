@@ -10,6 +10,8 @@ import activityRoutes from "./routes/activityRoutes.js";
 import financeRoutes from "./routes/financeRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
+import savingsRoutes from "./routes/savingsRoutes.js";
+import trashRoutes from "./routes/trashRoutes.js";
 
 // --- env validation ---
 const required = ["JWT_SECRET", "MONGO_URI"];
@@ -31,7 +33,7 @@ app.set("trust proxy", 1);
 
 app.use(helmet());
 
-// Dynamic CORS: allow configured origins + localhost in dev
+// Dynamic CORS: allow configured origins + any localhost port in dev
 const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:5173")
     .split(",")
     .map((s) => s.trim())
@@ -41,6 +43,10 @@ app.use(
         origin: (origin, cb) => {
             if (!origin) return cb(null, true); // same-origin / curl / server-to-server
             if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) return cb(null, true);
+            // In development, allow any localhost port so vite can use 5173-5185+
+            if (process.env.NODE_ENV !== "production" && /^https?:\/\/localhost:\d+$/.test(origin)) {
+                return cb(null, true);
+            }
             return cb(new Error(`CORS: origin ${origin} not allowed`));
         },
         credentials: true,
@@ -96,6 +102,8 @@ app.use("/api/activities", activityRoutes);
 app.use("/api/finances", financeRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/savings", savingsRoutes);
+app.use("/api/trash", trashRoutes);
 
 app.use((err, req, res, next) => {
     console.error(err);

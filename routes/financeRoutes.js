@@ -7,7 +7,7 @@ const router = express.Router();
 router.use(authRequired);
 
 router.get("/", async (req, res) => {
-    const transactions = await Transaction.find({ userId: req.user._id }).sort({ createdAt: -1 });
+    const transactions = await Transaction.find({ userId: req.user._id, deletedAt: null }).sort({ createdAt: -1 });
     res.json(transactions);
 });
 
@@ -39,9 +39,15 @@ router.put("/:id", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-    const deleted = await Transaction.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+    // Soft delete — moves to Trash instead of permanently removing, so it can
+    // be restored later or emptied explicitly from the Trash page.
+    const deleted = await Transaction.findOneAndUpdate(
+        { _id: req.params.id, userId: req.user._id, deletedAt: null },
+        { deletedAt: new Date() },
+        { new: true }
+    );
     if (!deleted) return res.status(404).json({ message: "Transaction not found" });
-    res.json({ message: "Transaction deleted" });
+    res.json({ message: "Transaction moved to trash" });
 });
 
 export default router;

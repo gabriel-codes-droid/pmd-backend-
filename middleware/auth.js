@@ -13,6 +13,7 @@ export const authRequired = async (req, res, next) => {
         const payload = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(payload.id).select("-password");
         if (!user) return res.status(401).json({ message: "Invalid token" });
+        if (user.banned) return res.status(403).json({ message: "Account banned. Contact support." });
         req.user = user;
         next();
     } catch (err) {
