@@ -35,6 +35,21 @@ const userSchema = new mongoose.Schema({
     lastLogin: {
         type: Date,
     },
+
+    profileImage: {
+        type: String,
+        default: null,
+    },
+
+    resetToken: {
+        type: String,
+        default: null,
+    },
+
+    resetExpires: {
+        type: Date,
+        default: null,
+    },
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);

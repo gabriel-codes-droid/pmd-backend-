@@ -1,8 +1,10 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import User from "../models/users.js";
 import { authRequired } from "../middleware/auth.js";
+import { sendEmail } from "../services/email.js";
 
 const router = express.Router();
 
@@ -16,6 +18,7 @@ const sanitize = (u) => ({
     role: u.role,
     lastLogin: u.lastLogin,
     createdAt: u.createdAt,
+    profileImage: u.profileImage,
 });
 
 router.post("/signup", async (req, res) => {
@@ -123,6 +126,150 @@ router.post("/login", async (req, res) => {
 
 router.get("/me", authRequired, (req, res) => {
     res.json({ user: sanitize(req.user) });
+});
+
+// Forgot password - send reset code via email
+router.post("/forgot-password", async (req, res) => {
+    try {
+        const { email } = req.body || {};
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
+        if (!user) {
+            // Don't reveal if email exists for security
+            return res.json({ message: "If the email exists, a reset code has been sent" });
+        }
+
+        // Generate 6-digit reset code
+        const resetCode = crypto.randomInt(100000, 999999).toString();
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+        // Store both the code and token (for verification)
+        user.resetToken = `${resetCode}:${resetToken}`;
+        user.resetExpires = resetExpires;
+        await user.save();
+
+        // Send email with reset code
+        await emailService.sendEmail({
+            to: user.email,
+            subject: "PMD Password Reset Code",
+            text: `Your password reset code is: ${resetCode}\n\nThis code will expire in 15 minutes.\n\nIf you didn't request this, please ignore this email.`
+        });
+
+        res.json({ message: "If the email exists, a reset code has been sent" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Verify reset code
+router.post("/verify-reset-code", async (req, res) => {
+    try {
+        const { email, code } = req.body || {};
+        if (!email || !code) {
+            return res.status(400).json({ message: "Email and code are required" });
+        }
+
+        const user = await User.findOne({ 
+            email: email.toLowerCase().trim(),
+            resetExpires: { $gt: new Date() }
+        });
+
+        if (!user || !user.resetToken) {
+            return res.status(400).json({ message: "Invalid or expired reset code" });
+        }
+
+        // Extract the code from the stored token (format: "code:token")
+        const storedCode = user.resetToken.split(':')[0];
+        if (storedCode !== code) {
+            return res.status(400).json({ message: "Invalid reset code" });
+        }
+
+        res.json({ message: "Code verified", resetToken: user.resetToken });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Reset password with code
+router.post("/reset-password", async (req, res) => {
+    try {
+        const { email, code, newPassword } = req.body || {};
+        if (!email || !code || !newPassword) {
+            return res.status(400).json({ message: "Email, code, and new password are required" });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters" });
+        }
+
+        const user = await User.findOne({ 
+            email: email.toLowerCase().trim(),
+            resetToken: code,
+            resetExpires: { $gt: new Date() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired reset code" });
+        }
+
+        const hash = await bcrypt.hash(newPassword, 10);
+        user.password = hash;
+        user.resetToken = null;
+        user.resetExpires = null;
+        await user.save();
+
+        res.json({ message: "Password reset successfully" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update profile image
+router.put("/profile-image", authRequired, async (req, res) => {
+    try {
+        const { profileImage } = req.body || {};
+        if (!profileImage) {
+            return res.status(400).json({ message: "Profile image URL is required" });
+        }
+
+        req.user.profileImage = profileImage;
+        await req.user.save();
+
+        res.json({ user: sanitize(req.user) });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Change password (authenticated)
+router.put("/change-password", authRequired, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body || {};
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: "Current and new password are required" });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: "Password must be at least 6 characters" });
+        }
+
+        const ok = await bcrypt.compare(currentPassword, req.user.password);
+        if (!ok) {
+            return res.status(401).json({ message: "Current password is incorrect" });
+        }
+
+        const hash = await bcrypt.hash(newPassword, 10);
+        req.user.password = hash;
+        await req.user.save();
+
+        res.json({ message: "Password changed successfully" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
 export default router;
