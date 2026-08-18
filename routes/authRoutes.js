@@ -152,12 +152,22 @@ router.post("/forgot-password", async (req, res) => {
         user.resetExpires = resetExpires;
         await user.save();
 
-        // Send email with reset code
-        await emailService.sendEmail({
-            to: user.email,
-            subject: "PMD Password Reset Code",
-            text: `Your password reset code is: ${resetCode}\n\nThis code will expire in 15 minutes.\n\nIf you didn't request this, please ignore this email.`
-        });
+        // Send email with reset code. This is deliberately isolated from the
+        // outer try/catch: a delivery failure (e.g. Resend's sandbox only
+        // allows sending to the account owner's own email until a domain is
+        // verified) must never leak into the response or turn into a 500 —
+        // that would both expose Resend's internals to the client and betray
+        // whether this email exists, which is exactly what the generic
+        // response below is trying to avoid.
+        try {
+            await sendEmail({
+                to: user.email,
+                subject: "PMD Password Reset Code",
+                text: `Your password reset code is: ${resetCode}\n\nThis code will expire in 15 minutes.\n\nIf you didn't request this, please ignore this email.`
+            });
+        } catch (sendErr) {
+            console.error("Password reset email failed to send:", sendErr.message);
+        }
 
         res.json({ message: "If the email exists, a reset code has been sent" });
     } catch (err) {
@@ -206,13 +216,15 @@ router.post("/reset-password", async (req, res) => {
             return res.status(400).json({ message: "Password must be at least 6 characters" });
         }
 
-        const user = await User.findOne({ 
+        const user = await User.findOne({
             email: email.toLowerCase().trim(),
-            resetToken: code,
             resetExpires: { $gt: new Date() }
         });
 
-        if (!user) {
+        // resetToken is stored as "code:token" (see /forgot-password) —
+        // comparing the raw field against `code` directly can never match,
+        // since the stored value also has the token half appended.
+        if (!user || !user.resetToken || user.resetToken.split(':')[0] !== code) {
             return res.status(400).json({ message: "Invalid or expired reset code" });
         }
 
