@@ -50,6 +50,17 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: null,
     },
+
+    emailNotificationsEnabled: {
+        type: Boolean,
+        default: false,
+    },
+
+    notificationFrequency: {
+        type: String,
+        enum: ["daily", "weekly", "never"],
+        default: "daily",
+    },
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);

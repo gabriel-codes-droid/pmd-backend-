@@ -1,6 +1,8 @@
 import express from "express";
 import Analytics from "../models/analytics.js";
 import { authRequired } from "../middleware/auth.js";
+import { sendEmail, generateDigestHTML } from "../services/email.js";
+import User from "../models/users.js";
 
 const router = express.Router();
 
@@ -98,6 +100,63 @@ router.get("/daily-activity", async (req, res) => {
     } catch (error) {
         console.error('Daily activity error:', error);
         res.status(500).json({ message: "Failed to fetch daily activity" });
+    }
+});
+
+// Send email digest
+router.post("/send-digest", async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        
+        // Check if user has email notifications enabled
+        if (!user.emailNotificationsEnabled) {
+            return res.json({ success: false, message: "Email notifications disabled" });
+        }
+        
+        // Get recent notifications (would need to store notifications in DB)
+        // For now, we'll use analytics data to generate insights
+        const recentActivity = await Analytics.find({ userId: req.user._id })
+            .sort({ timestamp: -1 })
+            .limit(10);
+        
+        // Generate mock notifications based on activity
+        const notifications = recentActivity.map(a => ({
+            type: 'info',
+            icon: '📊',
+            message: `Activity recorded: ${a.action || a.eventType} on ${a.page || 'dashboard'}`,
+            timestamp: new Date(a.timestamp).toLocaleString()
+        }));
+        
+        const html = generateDigestHTML(notifications, user.username);
+        const text = `Daily Digest for ${user.username}\n\n${notifications.map(n => `${n.icon} ${n.message} (${n.timestamp})`).join('\n\n')}`;
+        
+        await sendEmail({
+            to: user.email,
+            subject: `📊 Your PMD Daily Digest - ${new Date().toLocaleDateString()}`,
+            text,
+            html
+        });
+        
+        res.json({ success: true, message: "Digest sent successfully" });
+    } catch (error) {
+        console.error('Email digest error:', error);
+        res.status(500).json({ message: "Failed to send digest" });
+    }
+});
+
+// Toggle email notifications
+router.post("/toggle-email-notifications", async (req, res) => {
+    try {
+        const { enabled } = req.body;
+        
+        await User.findByIdAndUpdate(req.user._id, {
+            emailNotificationsEnabled: enabled
+        });
+        
+        res.json({ success: true, emailNotificationsEnabled: enabled });
+    } catch (error) {
+        console.error('Toggle notifications error:', error);
+        res.status(500).json({ message: "Failed to update preferences" });
     }
 });
 

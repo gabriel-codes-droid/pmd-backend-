@@ -7,7 +7,7 @@ const router = express.Router();
 router.use(authRequired);
 
 router.get("/", async (req, res) => {
-    const goals = await SavingsGoal.find({ userId: req.user._id }).sort({ createdAt: -1 });
+    const goals = await SavingsGoal.find({ userId: req.user._id, deletedAt: null }).sort({ createdAt: -1 });
     res.json(goals);
 });
 

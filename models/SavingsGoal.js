@@ -10,6 +10,7 @@ const savingsGoalSchema = new mongoose.Schema({
         ref: "User",
         required: true,
     },
+    deletedAt: { type: Date, default: null },
 }, { timestamps: true });
 
 const SavingsGoal = mongoose.model("SavingsGoal", savingsGoalSchema);
