@@ -245,7 +245,17 @@ router.put("/profile-image", authRequired, async (req, res) => {
     try {
         const { profileImage } = req.body || {};
         if (!profileImage) {
-            return res.status(400).json({ message: "Profile image URL is required" });
+            return res.status(400).json({ message: "Profile image is required" });
+        }
+
+        // Validate image size (max 5MB for base64)
+        if (profileImage.length > 5 * 1024 * 1024) {
+            return res.status(400).json({ message: "Image size exceeds 5MB limit" });
+        }
+
+        // Validate that it's a data URL
+        if (!profileImage.startsWith('data:image/')) {
+            return res.status(400).json({ message: "Invalid image format" });
         }
 
         req.user.profileImage = profileImage;
